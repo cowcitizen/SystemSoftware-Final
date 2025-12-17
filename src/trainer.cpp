@@ -89,6 +89,11 @@ namespace
                     _exit(1);
                 }
             }
+
+            if(execvp(prog, argv) == -1){
+                std::perror("execvp");
+                _exit(1);
+            }
         } else { // if this is parent
             return pid;
         }
