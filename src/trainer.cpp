@@ -37,11 +37,11 @@ namespace
         // This prevents child processes (after exec) from inheriting
         // these pipe descriptors unintentionally.
 
-        int flags = std::fcntl(fd, F_GETFD);
+        int flags = fcntl(fd, F_GETFD);
         if (flags >= 0){
             flags |= FD_CLOEXEC;
         }
-        std::fcntl(fd, F_SETFD, flags);
+        fcntl(fd, F_SETFD, flags);
     }
 
     int spawn_child(const char *prog,
