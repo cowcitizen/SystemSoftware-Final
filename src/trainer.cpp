@@ -22,6 +22,8 @@ namespace
         //
         // This flag can be used in the main loop to notice that a SIGCHLD
         // was delivered and then call wait()/waitpid() to reap children.
+
+        g_child_exited = 1;
     }
 
     void set_cloexec(int fd)
@@ -34,6 +36,12 @@ namespace
         //
         // This prevents child processes (after exec) from inheriting
         // these pipe descriptors unintentionally.
+
+        int flags = std::fcntl(fd, F_GETFD);
+        if (flags >= 0){
+            flags |= FD_CLOEXEC;
+        }
+        std::fcntl(fd, F_SETFD, flags);
     }
 
     int spawn_child(const char *prog,
@@ -61,6 +69,30 @@ namespace
         //
         // This function does NOT close any file descriptors; the caller
         // (trainer::run) remains responsible for closing unused pipe ends.
+
+        pid_t pid = fork();
+        if(pid < 0) {
+            std::perror("fork");
+            return -1;
+        }
+
+        if(pid == 0) { // if this is child
+            if(stdin_fd >= 0 && stdin_fd != STDIN_FILENO) {
+                if(dup2(stdin_fd, STDIN_FILENO) == -1) {
+                    std::perror("dup2(STDIN_FILENO)");
+                    _exit(1);
+                }
+            }
+            if(stdout_fd >= 0 && stdout_fd != STDOUT_FILENO) {
+                if(dup2(stdout_fd, STDOUT_FILENO) == -1) {
+                    std::perror("dup2(STDIN_FILENO)");
+                    _exit(1);
+                }
+            }
+        } else { // if this is parent
+            return pid;
+        }
+
         return -1; // placeholder return to keep the skeleton compilable
     }
 
