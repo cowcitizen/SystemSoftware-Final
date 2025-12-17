@@ -115,11 +115,12 @@ run_phase() {
   #          [run] Phase '<phase>' summary: (no SUMMARY line found)
   # ------------------------------------------------------------------
   local summary=""
-  # TODO: summary=...
+  summary=$(grep SUMMARY "$log_file" | tail -n1)
 
   if [[ -n "$summary" ]]; then
     local _tag samples avg_loss avg_yhat
     # TODO: read -r ...
+    read -r "$summary" _tag samples avg_loss avg_yhat
 
     echo "[run] Phase '$phase' summary: samples=$samples avg_loss=$avg_loss avg_yhat=$avg_yhat"
   else
